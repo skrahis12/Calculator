@@ -1,0 +1,74 @@
+.math-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none; /* Allows clicking through the background */
+  z-index: 0; /* Keep it behind everything else */
+  overflow: hidden;
+}
+
+.floating-math-wrapper {
+  position: absolute;
+  bottom: -50px; /* Start below the screen */
+  animation: floatUp linear infinite;
+  /* Font size and opacity are set inline */
+}
+
+.floating-math-content {
+  display: inline-block;
+  color: #00ffcc; /* Matches the LCD glow theme */
+  font-family: var(--font-digital), monospace;
+  user-select: none;
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.2s ease, text-shadow 0.2s ease;
+  will-change: transform;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: inherit; /* Fade in smoothly */
+  }
+  90% {
+    opacity: inherit;
+  }
+  100% {
+    transform: translateY(-120vh) rotate(360deg); /* Float up past the top of the screen and rotate */
+    opacity: 0;
+  }
+}
+
+.huge-click-feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(150px, 40vw, 500px);
+  color: rgba(0, 255, 204, 0.15); /* Match the cyan theme but subtle */
+  font-family: var(--font-digital), monospace;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 0;
+  text-shadow: 0 0 40px rgba(0, 255, 204, 0.2);
+  animation: flashFade 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes flashFade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.8);
+  }
+}
