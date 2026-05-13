@@ -14,8 +14,8 @@ const BackgroundAnimation = ({ clickEvent }) => {
   const itemRefs = useRef([]);
 
   useEffect(() => {
-    // Generate 40 random floating elements
-    const newElements = Array.from({ length: 40 }).map((_, index) => {
+    // Generate fewer random floating elements to optimize performance on mobile
+    const newElements = Array.from({ length: 15 }).map((_, index) => {
       const randomSymbol = mathSymbols[Math.floor(Math.random() * mathSymbols.length)];
       const leftPosition = Math.random() * 100; // 0 to 100vw
       const animationDuration = 10 + Math.random() * 20; // 10s to 30s
@@ -37,7 +37,7 @@ const BackgroundAnimation = ({ clickEvent }) => {
     });
 
     setElements(newElements);
-    itemRefs.current = itemRefs.current.slice(0, 40);
+    itemRefs.current = itemRefs.current.slice(0, 15);
 
     let animationFrameId;
 

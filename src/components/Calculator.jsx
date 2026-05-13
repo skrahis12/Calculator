@@ -8,11 +8,9 @@ const Calculator = ({ onButtonClick }) => {
   const inputRef = useRef(null);
   const historyEndRef = useRef(null);
 
-  // Focus the input on mount and whenever it renders so user can type immediately
+  // Focus the input on mount is removed to prevent keyboard popup on mobile
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    // Intentionally empty
   }, []);
 
   // Auto-scroll to bottom of history
@@ -78,17 +76,14 @@ const Calculator = ({ onButtonClick }) => {
   const handleClear = () => {
     setExpression('');
     setResult('');
-    if (inputRef.current) inputRef.current.focus();
   };
 
   const handleDelete = () => {
     setExpression((prev) => prev.slice(0, -1));
-    if (inputRef.current) inputRef.current.focus();
   };
 
   const handleCalculate = () => {
     calculateResult(expression);
-    if (inputRef.current) inputRef.current.focus();
   };
 
   const buttons = [
@@ -128,7 +123,6 @@ const Calculator = ({ onButtonClick }) => {
                   className="history-item"
                   onClick={() => {
                     setExpression(item.result.toString());
-                    if (inputRef.current) inputRef.current.focus();
                   }}
                   title="Click to use result"
                 >
