@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Calculator from './components/Calculator';
 import BackgroundAnimation from './components/BackgroundAnimation';
 import './App.css';
@@ -6,9 +6,9 @@ import './App.css';
 function App() {
   const [clickEvent, setClickEvent] = useState(null);
 
-  const handleButtonClick = (value) => {
+  const handleButtonClick = useCallback((value) => {
     setClickEvent({ value, id: Date.now() });
-  };
+  }, []);
 
   return (
     <>

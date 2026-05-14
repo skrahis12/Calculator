@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './Calculator.css';
 
 const Calculator = ({ onButtonClick }) => {
   const [expression, setExpression] = useState('');
   const [result, setResult] = useState('');
   const [history, setHistory] = useState([]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const inputRef = useRef(null);
   const historyEndRef = useRef(null);
 
@@ -22,8 +23,8 @@ const Calculator = ({ onButtonClick }) => {
 
   const handleInputChange = (e) => {
     const val = e.target.value;
-    // Allow only numbers, operators, decimal point, and parentheses
-    if (/^[0-9+\-*/(). ]*$/.test(val)) {
+    // Allow numbers, letters for functions, operators, decimal point, and parentheses
+    if (/^[0-9+\-*/(). a-z^π]*$/i.test(val)) {
       setExpression(val);
     }
   };
@@ -34,11 +35,36 @@ const Calculator = ({ onButtonClick }) => {
         setResult('');
         return;
       }
-      // Replace safe math symbols before evaluation
-      // Warning: In a real prod app, use a math parser library like mathjs instead of Function
-      // For this simple calculator, a scoped Function is used.
-      const sanitizedExpr = expr.replace(/[^-()\d/*+.]/g, '');
-      const evalResult = new Function('return ' + sanitizedExpr)();
+      
+      let parsedExpr = expr.toLowerCase();
+      
+      // Replace math functions with JS Math equivalents
+      parsedExpr = parsedExpr.replace(/antilog\(/g, '10**(');
+      parsedExpr = parsedExpr.replace(/log\(/g, 'Math.log10(');
+      parsedExpr = parsedExpr.replace(/ln\(/g, 'Math.log(');
+      parsedExpr = parsedExpr.replace(/asin\(/g, 'Math.asin(');
+      parsedExpr = parsedExpr.replace(/acos\(/g, 'Math.acos(');
+      parsedExpr = parsedExpr.replace(/atan\(/g, 'Math.atan(');
+      parsedExpr = parsedExpr.replace(/sin\(/g, 'Math.sin(');
+      parsedExpr = parsedExpr.replace(/cos\(/g, 'Math.cos(');
+      parsedExpr = parsedExpr.replace(/tan\(/g, 'Math.tan(');
+      parsedExpr = parsedExpr.replace(/sqrt\(/g, 'Math.sqrt(');
+      parsedExpr = parsedExpr.replace(/cbrt\(/g, 'Math.cbrt(');
+      parsedExpr = parsedExpr.replace(/abs\(/g, 'Math.abs(');
+      parsedExpr = parsedExpr.replace(/exp\(/g, 'Math.exp(');
+      parsedExpr = parsedExpr.replace(/\bpi\b/g, 'Math.PI');
+      parsedExpr = parsedExpr.replace(/π/g, 'Math.PI');
+      parsedExpr = parsedExpr.replace(/(?<![a-z])e(?![a-z])/g, 'Math.E');
+      parsedExpr = parsedExpr.replace(/\^/g, '**');
+      
+      // Security check: ensure no unexpected variables/functions are left
+      const safeCheck = parsedExpr.replace(/Math\.(log10|log|asin|acos|atan|sin|cos|tan|sqrt|cbrt|abs|exp|PI|E)/g, '');
+      if (/[a-z_]/i.test(safeCheck)) {
+        setResult('Error');
+        return;
+      }
+
+      const evalResult = new Function('return ' + parsedExpr)();
       
       if (evalResult === undefined || Number.isNaN(evalResult) || !isFinite(evalResult)) {
         setResult('Error');
@@ -86,7 +112,30 @@ const Calculator = ({ onButtonClick }) => {
     calculateResult(expression);
   };
 
-  const buttons = [
+  const advancedButtons = [
+    { label: 'sin', onClick: () => appendToExpression('sin('), className: 'btn-scientific' },
+    { label: 'cos', onClick: () => appendToExpression('cos('), className: 'btn-scientific' },
+    { label: 'tan', onClick: () => appendToExpression('tan('), className: 'btn-scientific' },
+    { label: 'log', onClick: () => appendToExpression('log('), className: 'btn-scientific' },
+    { label: 'asin', onClick: () => appendToExpression('asin('), className: 'btn-scientific' },
+    { label: 'acos', onClick: () => appendToExpression('acos('), className: 'btn-scientific' },
+    { label: 'atan', onClick: () => appendToExpression('atan('), className: 'btn-scientific' },
+    { label: 'ln', onClick: () => appendToExpression('ln('), className: 'btn-scientific' },
+    { label: 'sqrt', onClick: () => appendToExpression('sqrt('), className: 'btn-scientific' },
+    { label: 'cbrt', onClick: () => appendToExpression('cbrt('), className: 'btn-scientific' },
+    { label: '^', onClick: () => appendToExpression('^'), className: 'btn-scientific' },
+    { label: 'exp', onClick: () => appendToExpression('exp('), className: 'btn-scientific' },
+    { label: 'π', onClick: () => appendToExpression('π'), className: 'btn-scientific' },
+    { label: 'e', onClick: () => appendToExpression('e'), className: 'btn-scientific' },
+    { label: '(', onClick: () => appendToExpression('('), className: 'btn-operator' },
+    { label: ')', onClick: () => appendToExpression(')'), className: 'btn-operator' },
+    { label: 'C', onClick: handleClear, className: 'btn-clear' },
+    { label: 'DEL', onClick: handleDelete, className: 'btn-delete' },
+    { label: '10^x', onClick: () => appendToExpression('antilog('), className: 'btn-scientific' },
+    { label: '=', onClick: handleCalculate, className: 'btn-equal' },
+  ];
+
+  const basicButtons = [
     { label: 'C', onClick: handleClear, className: 'btn-clear' },
     { label: 'DEL', onClick: handleDelete, className: 'btn-delete' },
     { label: '(', onClick: () => appendToExpression('('), className: 'btn-operator' },
@@ -108,6 +157,8 @@ const Calculator = ({ onButtonClick }) => {
     { label: '=', onClick: handleCalculate, className: 'btn-equal' },
     { label: '+', onClick: () => appendToExpression('+'), className: 'btn-operator' },
   ];
+
+  const buttons = showAdvanced ? advancedButtons : basicButtons;
 
   return (
     <div className="calculator-container">
@@ -151,6 +202,15 @@ const Calculator = ({ onButtonClick }) => {
             {result !== '' ? `= ${result}` : '\u00A0'}
           </div>
         </div>
+        <div className="controls-row">
+          <button 
+            className="btn-toggle-advanced" 
+            onClick={() => setShowAdvanced(!showAdvanced)}
+          >
+            {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
+          </button>
+        </div>
+
         <div className="keypad">
           {
           buttons.map((btn, index) => (
@@ -171,4 +231,4 @@ const Calculator = ({ onButtonClick }) => {
   );
 };
 
-export default Calculator;
+export default React.memo(Calculator);
